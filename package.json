@@ -1,0 +1,25 @@
+{
+  "name": "telugu-social-prod",
+  "private": true,
+  "version": "0.1.0",
+  "description": "telugu.social monorepo",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --workspace apps/api",
+    "dev:web": "npm run dev --workspace apps/web",
+    "dev:staff": "npm run dev --workspace apps/staff-dashboard",
+    "dev:mobile": "npm run start --workspace apps/mobile",
+    "build": "npm run build --workspace apps/api && npm run build --workspace apps/web && npm run build --workspace apps/staff-dashboard",
+    "typecheck": "npm run typecheck --workspace apps/api && npm run typecheck --workspace apps/web && npm run typecheck --workspace apps/staff-dashboard",
+    "seed": "npm run seed --workspace apps/api",
+    "db:init": "npm run db:init --workspace apps/api",
+    "db:generate": "npm run db:generate --workspace apps/api"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

@@ -1,0 +1,372 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum SpaceType {
+  OFFICIAL
+  SCHOOL
+  COMMUNITY
+}
+
+enum SpaceRole {
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
+enum EventTier {
+  OFFICIAL
+  VERIFIED
+  COMMUNITY
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model User {
+  id                     String             @id @default(cuid())
+  phoneNumber            String             @unique
+  displayName            String?
+  username               String?            @unique
+  tagline                String?
+  bio                    String?
+  photoUrl               String?
+  schoolId               String?
+  neighbourhoodId        String?
+  totalExp               Int                @default(0)
+  level                  Int                @default(1)
+  isProfileVisible       Boolean            @default(true)
+  showConnectionCount    Boolean            @default(true)
+  onboardingCompletedAt  DateTime?
+  isDeleted              Boolean            @default(false)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+
+  school                 School?            @relation(fields: [schoolId], references: [id])
+  neighbourhood          Neighbourhood?     @relation(fields: [neighbourhoodId], references: [id])
+  interests              UserInterest[]
+  memberships            SpaceMembership[]
+  threads                Thread[]
+  posts                  Post[]
+  createdEvents          Event[]            @relation("EventCreator")
+  registrations          EventRegistration[]
+  badges                 UserBadge[]
+  achievements           UserAchievement[]
+  sentFriendRequests     FriendRequest[]    @relation("Sender")
+  receivedFriendRequests FriendRequest[]    @relation("Receiver")
+  connectionsA           FriendConnection[] @relation("ConnectionA")
+  connectionsB           FriendConnection[] @relation("ConnectionB")
+  blocksInitiated        Block[]            @relation("Blocker")
+  blockedByOthers        Block[]            @relation("Blocked")
+}
+
+model OtpSession {
+  id          String   @id @default(cuid())
+  phoneNumber String
+  code        String
+  purpose     String
+  userId      String?
+  isVerified  Boolean  @default(false)
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+}
+
+model School {
+  id        String   @id @default(cuid())
+  name      String
+  area      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  users  User[]
+  spaces Space[]
+}
+
+model Neighbourhood {
+  id        String   @id @default(cuid())
+  name      String
+  city      String   @default("Hyderabad")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  users User[]
+}
+
+model Interest {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  label     String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  users       UserInterest[]
+  officialFor Space[]
+  events      Event[]
+}
+
+model UserInterest {
+  userId      String
+  interestId  String
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interest    Interest @relation(fields: [interestId], references: [id], onDelete: Cascade)
+
+  @@id([userId, interestId])
+}
+
+model Space {
+  id                String            @id @default(cuid())
+  name              String
+  type              SpaceType
+  description       String?
+  schoolId          String?
+  interestId        String?
+  allowAnonymous    Boolean           @default(false)
+  createdByUserId   String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  school            School?           @relation(fields: [schoolId], references: [id])
+  interest          Interest?         @relation(fields: [interestId], references: [id])
+  memberships       SpaceMembership[]
+  threads           Thread[]
+  events            Event[]
+  mutes             SpaceMute[]
+}
+
+model SpaceMembership {
+  userId     String
+  spaceId    String
+  role       SpaceRole   @default(MEMBER)
+  createdAt  DateTime    @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  space      Space       @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@id([userId, spaceId])
+}
+
+model SpaceMute {
+  id         String   @id @default(cuid())
+  spaceId     String
+  userId      String
+  mutedUntil  DateTime?
+  reason      String?
+  createdById String
+  createdAt   DateTime @default(now())
+
+  space       Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@unique([spaceId, userId])
+}
+
+model Thread {
+  id         String   @id @default(cuid())
+  spaceId     String
+  authorId    String
+  title       String
+  body        String
+  isAnonymous Boolean @default(false)
+  isLocked    Boolean @default(false)
+  isDeleted   Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  space      Space    @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  posts      Post[]
+}
+
+model Post {
+  id          String   @id @default(cuid())
+  threadId     String
+  authorId     String
+  parentId     String?
+  body         String
+  isAnonymous  Boolean @default(false)
+  isDeleted    Boolean @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  thread       Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author       User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent       Post?    @relation("PostReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies      Post[]   @relation("PostReplies")
+  votes        PostVote[]
+  reports      PostReport[]
+}
+
+model PostVote {
+  postId      String
+  userId      String
+  value       Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([postId, userId])
+}
+
+model PostReport {
+  id          String   @id @default(cuid())
+  postId       String
+  reportedById String
+  reason       String
+  status       String   @default("OPEN")
+  createdAt    DateTime @default(now())
+  resolvedAt   DateTime?
+  resolvedById String?
+
+  post         Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Event {
+  id              String    @id @default(cuid())
+  title           String
+  description     String
+  schedule        String
+  venue           String
+  area            String
+  startAt         DateTime
+  endAt           DateTime
+  price           Int       @default(0)
+  tier            EventTier @default(COMMUNITY)
+  categoryInterestId String?
+  spaceId         String?
+  creatorId       String
+  isPromoted      Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  categoryInterest Interest?          @relation(fields: [categoryInterestId], references: [id])
+  space            Space?             @relation(fields: [spaceId], references: [id])
+  creator          User               @relation("EventCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  updates          EventUpdate[]
+  registrations    EventRegistration[]
+}
+
+model EventUpdate {
+  id         String   @id @default(cuid())
+  eventId     String
+  message     String
+  createdAt   DateTime @default(now())
+
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model EventRegistration {
+  id          String   @id @default(cuid())
+  eventId       String
+  userId        String
+  answersJson   String?
+  status        String   @default("CONFIRMED")
+  qrToken       String
+  createdAt     DateTime @default(now())
+
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  users       UserBadge[]
+}
+
+model UserBadge {
+  userId      String
+  badgeId     String
+  isPinned    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge       Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@id([userId, badgeId])
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  expValue    Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  userId        String
+  achievementId String
+  createdAt     DateTime @default(now())
+
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@id([userId, achievementId])
+}
+
+model FriendRequest {
+  id          String               @id @default(cuid())
+  senderId    String
+  receiverId  String
+  status      FriendRequestStatus  @default(PENDING)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  sender      User                 @relation("Sender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User                 @relation("Receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+}
+
+model FriendConnection {
+  id          String   @id @default(cuid())
+  userAId     String
+  userBId     String
+  createdAt   DateTime @default(now())
+
+  userA       User     @relation("ConnectionA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB       User     @relation("ConnectionB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId])
+}
+
+model Block {
+  id          String   @id @default(cuid())
+  blockerId   String
+  blockedId   String
+  createdAt   DateTime @default(now())
+
+  blocker     User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked     User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+}
+
+model StaffActionAuditLog {
+  id          String   @id @default(cuid())
+  actorId     String
+  actorRole   String
+  action      String
+  targetType  String
+  targetId    String
+  metadata    String?
+  createdAt   DateTime @default(now())
+}
+

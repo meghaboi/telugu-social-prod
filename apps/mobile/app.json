@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "telugu.social",
+    "slug": "telugu-social",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "social.telugu.app"
+    },
+    "android": {
+      "package": "social.telugu.app"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

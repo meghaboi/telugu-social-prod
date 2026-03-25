@@ -1,0 +1,85 @@
+name: CD Azure
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+env:
+  RESOURCE_GROUP: telugusocial-prod-rg
+  LOCATION: centralindia
+  API_CONTAINER_APP_NAME: telugu-social-api-ca-7128
+  API_PUBLIC_URL: https://telugu-social-api-ca-7128.lemonforest-8009da98.centralindia.azurecontainerapps.io
+  WEB_STORAGE_ACCOUNT: telugusocialweb7128
+  STAFF_STORAGE_ACCOUNT: telugusocialstaff7128
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Ensure containerapp extension
+        run: az extension add --name containerapp --upgrade --yes
+
+      - name: Deploy API (Container Apps build from source)
+        run: |
+          az containerapp up \
+            --name $API_CONTAINER_APP_NAME \
+            --resource-group $RESOURCE_GROUP \
+            --location $LOCATION \
+            --source apps/api \
+            --ingress external \
+            --target-port 4000 \
+            --env-vars PORT=4000 API_PORT=4000 DATABASE_URL=file:./prisma/dev.db
+
+      - name: Build user web app
+        run: |
+          export VITE_API_BASE_URL=$API_PUBLIC_URL
+          npm run build --workspace apps/web
+
+      - name: Build staff dashboard app
+        run: |
+          export VITE_API_BASE_URL=$API_PUBLIC_URL
+          npm run build --workspace apps/staff-dashboard
+
+      - name: Upload user web static files
+        run: |
+          az storage blob upload-batch \
+            --account-name $WEB_STORAGE_ACCOUNT \
+            --account-key "${{ secrets.AZURE_STORAGE_WEB_KEY }}" \
+            --destination '$web' \
+            --source apps/web/dist \
+            --overwrite
+
+      - name: Upload staff web static files
+        run: |
+          az storage blob upload-batch \
+            --account-name $STAFF_STORAGE_ACCOUNT \
+            --account-key "${{ secrets.AZURE_STORAGE_STAFF_KEY }}" \
+            --destination '$web' \
+            --source apps/staff-dashboard/dist \
+            --overwrite
+
