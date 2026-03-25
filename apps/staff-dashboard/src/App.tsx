@@ -55,75 +55,110 @@ export function App() {
   }
 
   return (
-    <div className="page">
-      <h1>telugu.social Staff Dashboard (Phase 1)</h1>
-      <p>Moderation queue, event tiering queue, user management and audit logs.</p>
+    <div className="dashboard-shell">
+      <aside className="sidebar">
+        <p className="eyebrow">telugu.social</p>
+        <h1>Staff Control</h1>
+        <p className="sidebar-copy">Moderation, review queue, user management, and audit visibility.</p>
+      </aside>
 
-      <div className="card">
-        <label>
-          Staff User ID
-          <input value={staffUserId} onChange={(e) => setStaffUserId(e.target.value)} />
-        </label>
-        <label>
-          Staff Role
-          <input value={staffRole} onChange={(e) => setStaffRole(e.target.value)} />
-        </label>
-        {error ? <p className="error">{error}</p> : null}
-      </div>
+      <main className="dashboard-main">
+        <section className="card">
+          <div className="top-row">
+            <div>
+              <p className="eyebrow">Phase 1</p>
+              <h2>Admin Access</h2>
+            </div>
+            <p className="status-pill">{staffUserId ? "Authorized ID entered" : "Awaiting staff ID"}</p>
+          </div>
 
-      <div className="row">
-        <button onClick={loadReports} disabled={!staffUserId}>
-          Load Reports
-        </button>
-        <button onClick={loadQueue} disabled={!staffUserId}>
-          Load Event Queue
-        </button>
-        <button onClick={loadUsers} disabled={!staffUserId}>
-          Load Users
-        </button>
-        <button onClick={loadLogs} disabled={!staffUserId}>
-          Load Audit Logs
-        </button>
-      </div>
+          <div className="input-grid">
+            <label>
+              Staff User ID
+              <input value={staffUserId} onChange={(e) => setStaffUserId(e.target.value)} />
+            </label>
+            <label>
+              Staff Role
+              <input value={staffRole} onChange={(e) => setStaffRole(e.target.value)} />
+            </label>
+          </div>
+          {error ? <p className="error">{error}</p> : null}
+        </section>
 
-      <div className="card">
-        <h2>Reports</h2>
-        <ul>
-          {reports.map((report) => (
-            <li key={report.id}>
-              {report.reason} [{report.status}]
-            </li>
-          ))}
-        </ul>
-      </div>
+        <section className="card">
+          <h3>Actions</h3>
+          <div className="row">
+            <button onClick={loadReports} disabled={!staffUserId}>
+              Load Reports
+            </button>
+            <button onClick={loadQueue} disabled={!staffUserId}>
+              Load Event Queue
+            </button>
+            <button onClick={loadUsers} disabled={!staffUserId}>
+              Load Users
+            </button>
+            <button onClick={loadLogs} disabled={!staffUserId}>
+              Load Audit Logs
+            </button>
+          </div>
+        </section>
 
-      <div className="card">
-        <h2>Event Review Queue</h2>
-        <ul>
-          {events.map((event) => (
-            <li key={event.id}>
-              {event.title} ({event.tier})
-            </li>
-          ))}
-        </ul>
-      </div>
+        <section className="dashboard-grid">
+          <article className="card">
+            <h3>Reports</h3>
+            <ul className="list">
+              {reports.length ? (
+                reports.map((report) => (
+                  <li key={report.id}>
+                    <strong>{report.reason}</strong>
+                    <span>Status: {report.status}</span>
+                  </li>
+                ))
+              ) : (
+                <li className="empty">No reports loaded yet.</li>
+              )}
+            </ul>
+          </article>
 
-      <div className="card">
-        <h2>Users</h2>
-        <ul>
-          {users.map((user) => (
-            <li key={user.id}>
-              {user.displayName ?? "No name"} @{user.username ?? "no-username"}
-            </li>
-          ))}
-        </ul>
-      </div>
+          <article className="card">
+            <h3>Event Review Queue</h3>
+            <ul className="list">
+              {events.length ? (
+                events.map((event) => (
+                  <li key={event.id}>
+                    <strong>{event.title}</strong>
+                    <span>Tier: {event.tier}</span>
+                  </li>
+                ))
+              ) : (
+                <li className="empty">No queued events loaded yet.</li>
+              )}
+            </ul>
+          </article>
 
-      <div className="card">
-        <h2>Audit Logs</h2>
-        <p>Total logs: {logs}</p>
-      </div>
+          <article className="card">
+            <h3>Users</h3>
+            <ul className="list">
+              {users.length ? (
+                users.map((user) => (
+                  <li key={user.id}>
+                    <strong>{user.displayName ?? "No name"}</strong>
+                    <span>@{user.username ?? "no-username"}</span>
+                  </li>
+                ))
+              ) : (
+                <li className="empty">No users loaded yet.</li>
+              )}
+            </ul>
+          </article>
+
+          <article className="card">
+            <h3>Audit Logs</h3>
+            <p className="audit-count">{logs}</p>
+            <p className="audit-copy">entries available in current response.</p>
+          </article>
+        </section>
+      </main>
     </div>
   );
 }
-

@@ -56,67 +56,111 @@ export function App() {
   }
 
   return (
-    <div className="page">
-      <h1>telugu.social User App (Phase 1)</h1>
-      <p>Use OTP auth, then load Pulse, events and spaces.</p>
+    <div className="app-shell">
+      <aside className="left-rail">
+        <p className="eyebrow">telugu.social</p>
+        <h1>Community App</h1>
+        <p className="subtitle">A modern shell for Pulse, events, and spaces.</p>
+        <nav className="rail-nav">
+          <button className="ghost-btn" type="button">
+            Pulse
+          </button>
+          <button className="ghost-btn" type="button">
+            Events
+          </button>
+          <button className="ghost-btn" type="button">
+            Spaces
+          </button>
+        </nav>
+      </aside>
 
-      <div className="card">
-        <h2>Auth</h2>
-        <label>
-          Phone
-          <input value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
-        </label>
-        <div className="row">
-          <button onClick={requestOtp}>Request OTP</button>
-          <button onClick={verifyOtp}>Verify OTP</button>
-        </div>
-        <label>
-          OTP
-          <input value={otpCode} onChange={(e) => setOtpCode(e.target.value)} />
-        </label>
-        <p>User ID: {userId || "not logged in"}</p>
-        {error ? <p className="error">{error}</p> : null}
-      </div>
+      <main className="main-panel">
+        <section className="card hero-card">
+          <div>
+            <p className="eyebrow">Phase 1 Web</p>
+            <h2>Sign in and load live data</h2>
+          </div>
+          <p className="status-pill">{userId ? "Logged in" : "Logged out"}</p>
+        </section>
 
-      <div className="row">
-        <button disabled={!userId} onClick={loadPulse}>
-          Load Pulse
-        </button>
-        <button disabled={!userId} onClick={loadEvents}>
-          Load Events
-        </button>
-        <button disabled={!userId} onClick={loadSpaces}>
-          Load Spaces
-        </button>
-      </div>
+        <section className="card">
+          <h3>Authentication</h3>
+          <div className="field-grid">
+            <label>
+              Phone
+              <input value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} />
+            </label>
+            <label>
+              OTP
+              <input value={otpCode} onChange={(e) => setOtpCode(e.target.value)} />
+            </label>
+          </div>
+          <div className="row">
+            <button onClick={requestOtp}>Request OTP</button>
+            <button onClick={verifyOtp}>Verify OTP</button>
+          </div>
+          <p className="meta-line">User ID: {userId || "not logged in"}</p>
+          {error ? <p className="error">{error}</p> : null}
+        </section>
 
-      <div className="card">
-        <h2>Pulse</h2>
-        <p>{pulse || "No pulse loaded"}</p>
-      </div>
+        <section className="card">
+          <h3>Data Actions</h3>
+          <div className="row">
+            <button disabled={!userId} onClick={loadPulse}>
+              Load Pulse
+            </button>
+            <button disabled={!userId} onClick={loadEvents}>
+              Load Events
+            </button>
+            <button disabled={!userId} onClick={loadSpaces}>
+              Load Spaces
+            </button>
+          </div>
+        </section>
 
-      <div className="card">
-        <h2>Events</h2>
-        <ul>
-          {events.map((event) => (
-            <li key={event.id}>
-              {event.title} ({event.tier}) - {event.area}
-            </li>
-          ))}
-        </ul>
-      </div>
+        <section className="grid-panels">
+          <article className="card">
+            <h3>Pulse</h3>
+            <p className="body-copy">{pulse || "No pulse loaded yet."}</p>
+          </article>
 
-      <div className="card">
-        <h2>Spaces</h2>
-        <ul>
-          {spaces.map((space) => (
-            <li key={space.id}>
-              {space.name} [{space.type}] role={space.role}
-            </li>
-          ))}
-        </ul>
-      </div>
+          <article className="card">
+            <h3>Events</h3>
+            <ul className="list">
+              {events.length ? (
+                events.map((event) => (
+                  <li key={event.id}>
+                    <strong>{event.title}</strong>
+                    <span>
+                      {event.tier} | {event.area}
+                    </span>
+                  </li>
+                ))
+              ) : (
+                <li className="empty">No events loaded yet.</li>
+              )}
+            </ul>
+          </article>
+
+          <article className="card">
+            <h3>Spaces</h3>
+            <ul className="list">
+              {spaces.length ? (
+                spaces.map((space) => (
+                  <li key={space.id}>
+                    <strong>{space.name}</strong>
+                    <span>
+                      {space.type} | role: {space.role}
+                    </span>
+                  </li>
+                ))
+              ) : (
+                <li className="empty">No spaces loaded yet.</li>
+              )}
+            </ul>
+          </article>
+        </section>
+      </main>
     </div>
   );
 }
-

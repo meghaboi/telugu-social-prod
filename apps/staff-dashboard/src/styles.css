@@ -1,58 +1,206 @@
-body {
-  margin: 0;
-  font-family: "Segoe UI", sans-serif;
-  background: #f8fafc;
-  color: #111827;
+.dashboard-shell {
+  width: min(1280px, calc(100% - (var(--space-6) * 2)));
+  margin: var(--space-10) auto;
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: var(--space-6);
 }
 
-.page {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 24px;
+.sidebar {
+  background: var(--c-panel);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-lg);
+  padding: var(--space-6);
+  align-self: start;
+  position: sticky;
+  top: var(--space-6);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+}
+
+h1,
+h2 {
+  font-family: var(--font-display);
+}
+
+h1 {
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 1.6rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+  color: var(--c-ink-2);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-2);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--c-ink-3);
+}
+
+.sidebar-copy {
+  margin: var(--space-3) 0 0;
+  color: var(--c-ink-3);
+}
+
+.dashboard-main {
+  display: grid;
+  gap: var(--space-4);
 }
 
 .card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 16px;
-  margin-top: 16px;
+  background: var(--c-panel);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-lg);
+  padding: var(--space-5);
 }
 
-.row {
+.top-row {
   display: flex;
-  gap: 8px;
-  margin: 16px 0;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.status-pill {
+  margin: 0;
+  border: 1px solid var(--c-rule);
+  border-radius: 999px;
+  background: #fff;
+  padding: var(--space-2) var(--space-4);
+  white-space: nowrap;
+}
+
+.input-grid {
+  margin-top: var(--space-4);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
 }
 
 label {
   display: block;
-  margin-top: 8px;
+  font-size: 0.9rem;
 }
 
 input {
   width: 100%;
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  margin-top: 4px;
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--c-rule);
+  background: #fff;
+  font: inherit;
+}
+
+input:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--c-ink);
+  outline-offset: 1px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 }
 
 button {
-  border: none;
-  background: #0f172a;
+  border: 1px solid var(--c-ink);
+  background: var(--c-ink);
   color: #fff;
-  padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
+  padding: var(--space-2) var(--space-4);
+  font: inherit;
   cursor: pointer;
 }
 
+button:hover:enabled {
+  background: var(--c-ink-2);
+}
+
 button:disabled {
-  background: #94a3b8;
+  cursor: not-allowed;
+  border-color: var(--c-rule);
+  background: var(--c-muted);
+  color: #6e6a60;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.list {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.list li {
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-md);
+  padding: var(--space-3);
+  display: grid;
+  gap: var(--space-1);
+}
+
+.list li span {
+  color: var(--c-ink-3);
+  font-size: 0.9rem;
+}
+
+.audit-count {
+  font-family: var(--font-display);
+  font-size: 4rem;
+  line-height: 1;
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+.audit-copy,
+.empty {
+  margin: 0;
+  color: var(--c-ink-3);
 }
 
 .error {
-  color: #b91c1c;
+  margin: var(--space-3) 0 0;
+  color: var(--c-error);
 }
 
+@media (max-width: 980px) {
+  .dashboard-shell {
+    width: min(1280px, calc(100% - (var(--space-4) * 2)));
+    margin: var(--space-6) auto;
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+  }
+
+  .input-grid,
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .top-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

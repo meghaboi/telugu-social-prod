@@ -1,0 +1,44 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap");
+
+:root {
+  --font-display: "DM Serif Display", "Times New Roman", serif;
+  --font-body: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  --c-ink: #111111;
+  --c-ink-2: #1f1f1f;
+  --c-ink-3: #333333;
+  --c-paper: #f6f4ef;
+  --c-panel: #ffffff;
+  --c-muted: #ece9e2;
+  --c-rule: #d8d3c8;
+  --c-error: #8b3a3a;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--c-ink);
+  background:
+    radial-gradient(circle at 5% 0%, #ffffff 0%, transparent 34%),
+    radial-gradient(circle at 95% 100%, #e4dfd3 0%, transparent 40%),
+    var(--c-paper);
+}
