@@ -8,6 +8,7 @@ on:
       - master
 
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   RESOURCE_GROUP: telugusocial-prod-rg
   LOCATION: centralindia
   API_CONTAINER_APP_NAME: telugu-social-api-ca-7128
@@ -21,12 +22,18 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    env:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_STORAGE_WEB_KEY: ${{ secrets.AZURE_STORAGE_WEB_KEY }}
+      AZURE_STORAGE_STAFF_KEY: ${{ secrets.AZURE_STORAGE_STAFF_KEY }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -34,12 +41,21 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Validate Azure Secrets
+        shell: bash
+        run: |
+          test -n "$AZURE_CLIENT_ID" || (echo "Missing AZURE_CLIENT_ID secret" && exit 1)
+          test -n "$AZURE_TENANT_ID" || (echo "Missing AZURE_TENANT_ID secret" && exit 1)
+          test -n "$AZURE_SUBSCRIPTION_ID" || (echo "Missing AZURE_SUBSCRIPTION_ID secret" && exit 1)
+          test -n "$AZURE_STORAGE_WEB_KEY" || (echo "Missing AZURE_STORAGE_WEB_KEY secret" && exit 1)
+          test -n "$AZURE_STORAGE_STAFF_KEY" || (echo "Missing AZURE_STORAGE_STAFF_KEY secret" && exit 1)
+
       - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
       - name: Ensure containerapp extension
         run: az extension add --name containerapp --upgrade --yes
@@ -69,7 +85,7 @@ jobs:
         run: |
           az storage blob upload-batch \
             --account-name $WEB_STORAGE_ACCOUNT \
-            --account-key "${{ secrets.AZURE_STORAGE_WEB_KEY }}" \
+            --account-key "$AZURE_STORAGE_WEB_KEY" \
             --destination '$web' \
             --source apps/web/dist \
             --overwrite
@@ -78,8 +94,7 @@ jobs:
         run: |
           az storage blob upload-batch \
             --account-name $STAFF_STORAGE_ACCOUNT \
-            --account-key "${{ secrets.AZURE_STORAGE_STAFF_KEY }}" \
+            --account-key "$AZURE_STORAGE_STAFF_KEY" \
             --destination '$web' \
             --source apps/staff-dashboard/dist \
             --overwrite
-
