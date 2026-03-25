@@ -93,7 +93,11 @@ authOnboardingRouter.post("/auth/otp/verify", async (req, res, next) => {
     if (!user && purpose === "LOGIN") {
       user = await prisma.user.create({ data: { phoneNumber } });
     }
-    res.json({ ok: true, userId: user?.id ?? null });
+    res.json({
+      ok: true,
+      userId: user?.id ?? null,
+      onboardingCompleted: Boolean(user?.onboardingCompletedAt)
+    });
   } catch (error) {
     next(error);
   }
